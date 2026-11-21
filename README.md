@@ -1,6 +1,6 @@
 # BrochachoMC's 3D Skins Maker
 
-App Android para criar **skinpacks 3D** (`.mcpack`) de Minecraft Bedrock direto no celular. Você envia a textura e o modelo, o app mostra o render 3D de cada skin e gera o pacote pronto.
+App Android para criar **skinpacks 3D** (`.mcpack`) de Minecraft Bedrock no celular.
 
 > **Para usar as skins no jogo é preciso o [Levi Launcher](https://github.com/LiteLDev/LeviLauncher) e o mod 4DSkins.** Veja a seção [Usando no jogo](#usando-no-jogo).
 
