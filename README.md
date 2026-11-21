@@ -43,30 +43,6 @@ As skins 3D só funcionam no jogo com:
 
 Depois, abra o `.mcpack` gerado pelo app com o jogo aberto pelo launcher. As skins aparecem na seleção de skins, com os nomes que você escolheu.
 
-## Gerar o APK pelo GitHub
-
-O APK é compilado pelo GitHub Actions, sem precisar de computador.
-
-1. Mantenha no repositório os arquivos: `app.html`, `package.json`, `capacitor.config.json`, `scripts/prepare.js`, `.github/workflows/android.yml` e as imagens do ícone (`icon-only.png`, `icon-foreground.png`, `icon-background.png`).
-2. Abra a aba **Actions**, escolha **Build APK** e toque em **Run workflow**. Ela também roda sozinha a cada commit no `main`.
-3. Quando terminar, baixe o `app-debug.apk` na aba **Releases** (tag `apk-latest`).
-4. Instale o APK. O Android pede para permitir a instalação de fontes desconhecidas.
-
-Para mudar o app, substitua o `app.html` no repositório (envie como arquivo; o arquivo é grande demais para colar) e rode o **Build APK** de novo.
-
-## Estrutura do projeto
-
-```
-app.html                    app completo (HTML, CSS e JS em um arquivo)
-scripts/prepare.js          monta a pasta www (copia as bibliotecas e embala o app.html)
-capacitor.config.json       nome e id do app Android
-package.json                dependências (Capacitor, three.js, JSZip)
-icon-*.png                  ícone do app
-.github/workflows/android.yml   compilação do APK
-```
-
-O app usa [three.js](https://threejs.org) para o render 3D, [JSZip](https://stuk.github.io/jszip/) para ler e gerar o `.mcpack` e [Capacitor](https://capacitorjs.com) para virar um app Android.
-
 ## Observações
 
 - Os projetos ficam salvos só no aparelho. Se você desinstalar o app ou limpar os dados dele, eles somem. Gere o `.mcpack` dos projetos importantes.
