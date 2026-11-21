@@ -1,0 +1,315 @@
+<title>Skinpack Maker</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;700&display=swap">
+<style>
+/* Layout: ferramenta de uma coluna para celular. Projeto no topo, grade de skins com render 3D, barra fixa para gerar o pacote. */
+:root {
+  --bg: #f1f4ee;
+  --panel: #ffffff;
+  --fg: #1b231c;
+  --muted: #5b685d;
+  --line: #d8dfd3;
+  --accent: #2e7b3d;
+  --accent-fg: #ffffff;
+  --soft: #e4eee0;
+  --stage: #e7ede3;
+  --danger: #b3261e;
+  --warn: #8a5a00;
+  --warn-bg: #fbf0d6;
+  --font-display: "Space Grotesk", system-ui, sans-serif;
+  --font-body: "Inter", system-ui, -apple-system, sans-serif;
+  --font-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #111611; --panel: #1a211b; --fg: #e6eee5; --muted: #9aa99b; --line: #2b362c;
+    --accent: #6fcf7f; --accent-fg: #0c190e; --soft: #213023; --stage: #212b22;
+    --danger: #ff8f86; --warn: #f2c66b; --warn-bg: #3a3017; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #111611; --panel: #1a211b; --fg: #e6eee5; --muted: #9aa99b; --line: #2b362c;
+  --accent: #6fcf7f; --accent-fg: #0c190e; --soft: #213023; --stage: #212b22;
+  --danger: #ff8f86; --warn: #f2c66b; --warn-bg: #3a3017; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--fg); font: 15px/1.45 var(--font-body);
+  padding-block: 0 104px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+h1, h2 { font-family: var(--font-display); margin: 0; text-wrap: balance; }
+button, input, select { font: inherit; color: inherit; }
+button:focus-visible, input:focus-visible, select:focus-visible, label:focus-within { outline: 2px solid var(--accent); outline-offset: 2px; }
+.wrap { max-width: 880px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; }
+header.top { padding-top: 20px; display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+header.top h1 { font-size: 26px; letter-spacing: -0.01em; }
+header.top span { color: var(--muted); font-size: 13px; }
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 16px; }
+.project { display: grid; gap: 14px; grid-template-columns: 1fr 120px; align-items: end; }
+.project .full { grid-column: 1 / -1; }
+.field { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.field > span, .lbl { font-size: 12px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); }
+input[type=text] { width: 100%; padding: 11px 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); }
+.btn { border: 1px solid var(--line); background: var(--panel); padding: 10px 14px; border-radius: 8px; cursor: pointer; font-weight: 500; min-height: 44px; }
+.btn:hover { background: var(--soft); }
+.btn.primary { background: var(--accent); color: var(--accent-fg); border-color: var(--accent); font-weight: 600; }
+.btn.primary:hover { filter: brightness(1.06); }
+.btn.danger { color: var(--danger); }
+.btn.small { min-height: 38px; padding: 7px 12px; font-size: 14px; }
+.btn:disabled { opacity: .5; cursor: default; }
+.hint { color: var(--muted); font-size: 13px; margin: 0; }
+.listhead { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.listhead h2 { font-size: 20px; }
+.listhead h2 small { font: 500 14px var(--font-body); color: var(--muted); margin-left: 6px; }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; }
+.skin { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; min-width: 0; }
+.thumb { all: unset; display: block; cursor: pointer; background: var(--stage); aspect-ratio: 4 / 5; position: relative; }
+.thumb:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+.thumb img { width: 100%; height: 100%; object-fit: contain; display: block; }
+.thumb .badge { position: absolute; right: 8px; bottom: 8px; background: var(--panel); border: 1px solid var(--line); border-radius: 999px; padding: 2px 9px; font-size: 12px; font-weight: 600; }
+.skin .body { padding: 10px 12px 12px; display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.skin .name { font-weight: 600; overflow-wrap: anywhere; }
+.skin .meta { font: 12px var(--font-mono); color: var(--muted); overflow-wrap: anywhere; }
+.warn { background: var(--warn-bg); color: var(--warn); border-radius: 6px; padding: 5px 8px; font-size: 12px; }
+.actions { display: flex; gap: 8px; }
+.actions .btn { flex: 1; }
+.sw { display: flex; align-items: center; gap: 10px; cursor: pointer; font-size: 14px; min-height: 36px; }
+.sw input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.sw .track { width: 40px; height: 24px; border-radius: 999px; background: var(--line); position: relative; flex: none; transition: background .15s; }
+.sw .track::after { content: ""; position: absolute; top: 3px; left: 3px; width: 18px; height: 18px; border-radius: 50%; background: var(--panel); box-shadow: 0 1px 2px rgba(0,0,0,.3); transition: transform .15s; }
+.sw input:checked + .track { background: var(--accent); }
+.sw input:checked + .track::after { transform: translateX(16px); }
+.sw input:focus-visible + .track { outline: 2px solid var(--accent); outline-offset: 2px; }
+.empty { border: 1px dashed var(--line); border-radius: 12px; padding: 28px 16px; text-align: center; color: var(--muted); }
+.bar { position: fixed; left: 0; right: 0; bottom: 0; background: var(--panel); border-top: 1px solid var(--line); z-index: 5;
+  padding: 12px max(16px, env(safe-area-inset-right, 0px)) calc(12px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); }
+.bar .in { max-width: 880px; margin: 0 auto; display: flex; gap: 12px; align-items: center; }
+.bar .in .btn { flex: 1; }
+.bar .st { font-size: 12px; color: var(--muted); flex: 1.2; min-width: 0; }
+.overlay { position: fixed; inset: 0; z-index: 20; background: rgba(8, 12, 8, .6); display: flex; align-items: flex-end; justify-content: center; }
+.sheet { background: var(--panel); width: 100%; max-width: 560px; max-height: 94%; overflow: auto; border-radius: 16px 16px 0 0; padding: 18px 16px calc(18px + env(safe-area-inset-bottom, 0px)); display: flex; flex-direction: column; gap: 14px; }
+.sheet h2 { font-size: 20px; }
+.row2 { display: grid; grid-template-columns: 112px 1fr; gap: 14px; align-items: start; }
+.mini { background: var(--stage); border-radius: 10px; aspect-ratio: 4 / 5; overflow: hidden; }
+.mini img { width: 100%; height: 100%; object-fit: contain; display: block; }
+.stack { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.file { display: flex; gap: 8px; align-items: center; min-width: 0; }
+.file .fname { font-size: 13px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+.file input[type=file] { display: none; }
+select { width: 100%; padding: 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); }
+.sheet .foot { display: flex; gap: 10px; }
+.sheet .foot .btn { flex: 1; }
+.err { color: var(--danger); font-size: 13px; min-height: 1em; margin: 0; }
+.viewer { background: var(--panel); width: 100%; max-width: 560px; height: 94%; border-radius: 16px 16px 0 0; display: flex; flex-direction: column; overflow: hidden; }
+.viewer .vh { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 12px 16px; border-bottom: 1px solid var(--line); }
+.viewer .vh b { font-family: var(--font-display); font-size: 18px; overflow-wrap: anywhere; }
+.viewer canvas { flex: 1; width: 100%; min-height: 0; background: var(--stage); touch-action: none; cursor: grab; display: block; }
+.viewer .vf { padding: 10px 16px calc(10px + env(safe-area-inset-bottom, 0px)); display: flex; gap: 10px; align-items: center; }
+.viewer .vf .hint { flex: 1; }
+.toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(92px + env(safe-area-inset-bottom, 0px)); z-index: 40; background: var(--fg); color: var(--bg); padding: 10px 16px; border-radius: 999px; font-size: 14px; max-width: calc(100% - 32px); text-align: center; }
+@media (prefers-reduced-motion: reduce) { .sw .track, .sw .track::after { transition: none; } }
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <h1>Skinpack Maker</h1>
+    <span>Minecraft Bedrock · skins 3D</span>
+  </header>
+
+  <section class="card project" aria-label="Projeto">
+    <label class="field"><span>Nome do projeto</span><input type="text" id="projName" autocomplete="off" maxlength="60"></label>
+    <label class="field"><span>Versão</span><input type="text" id="projVer" inputmode="decimal" autocomplete="off" maxlength="12"></label>
+    <div class="full" style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+      <label class="btn" for="importFile" style="display:inline-flex;align-items:center">Importar .mcpack</label>
+      <input type="file" id="importFile" accept=".mcpack,.zip,application/zip" hidden>
+      <p class="hint" style="flex:1;min-width:180px">Importar substitui o projeto atual. Use para editar um pacote que você já fez.</p>
+    </div>
+  </section>
+
+  <section aria-label="Skins">
+    <div class="listhead">
+      <h2>Skins<small id="count"></small></h2>
+      <button class="btn primary" id="addBtn" type="button">+ Adicionar skin</button>
+    </div>
+    <div id="grid" class="grid" style="margin-top:12px"></div>
+    <div id="empty" class="empty" hidden>Nenhuma skin ainda. Toque em “Adicionar skin” e envie a textura e o modelo.</div>
+  </section>
+</div>
+
+<div class="bar">
+  <div class="in">
+    <div class="st" id="status">Pronto para gerar.</div>
+    <button class="btn primary" id="genBtn" type="button">Gerar .mcpack</button>
+  </div>
+</div>
+
+<div class="overlay" id="sheetOv" hidden>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
+    <h2 id="sheetTitle">Nova skin</h2>
+    <div class="row2">
+      <div class="mini"><img id="miniImg" alt="" hidden></div>
+      <div class="stack">
+        <label class="field"><span>Nome da skin</span><input type="text" id="skName" autocomplete="off" maxlength="40"></label>
+        <label class="sw"><input type="checkbox" id="skHide"><span class="track"></span>Esconder armadura (hide_armor)</label>
+        <label class="sw" id="slimRow"><input type="checkbox" id="skSlim"><span class="track"></span>Braços finos (Alex)</label>
+      </div>
+    </div>
+    <div class="field"><span>Textura (.png)</span>
+      <div class="file"><label class="btn small" for="texFile">Escolher PNG</label><input type="file" id="texFile" accept="image/png"><span class="fname" id="texName">Nenhum arquivo</span></div>
+    </div>
+    <div class="field"><span>Modelo 3D (.json / .geo.json) — opcional</span>
+      <div class="file"><label class="btn small" for="geoFile">Escolher modelo</label><input type="file" id="geoFile" accept=".json,application/json"><span class="fname" id="geoName">Sem modelo: usa o corpo padrão</span><button class="btn small danger" type="button" id="geoClear" hidden>Remover</button></div>
+      <select id="geoSel" hidden aria-label="Geometria do arquivo"></select>
+    </div>
+    <div class="field"><span>Capa (.png) — opcional</span>
+      <div class="file"><label class="btn small" for="capeFile">Escolher capa</label><input type="file" id="capeFile" accept="image/png"><span class="fname" id="capeName">Sem capa</span><button class="btn small danger" type="button" id="capeClear" hidden>Remover</button></div>
+    </div>
+    <p class="err" id="sheetErr" role="alert"></p>
+    <div class="foot">
+      <button class="btn" type="button" id="sheetCancel">Cancelar</button>
+      <button class="btn primary" type="button" id="sheetSave">Salvar skin</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="viewOv" hidden>
+  <div class="viewer" role="dialog" aria-modal="true" aria-label="Visualização 3D">
+    <div class="vh"><b id="vName"></b><button class="btn small" type="button" id="vClose">Fechar</button></div>
+    <canvas id="vCanvas"></canvas>
+    <div class="vf"><p class="hint">Arraste para girar. Pince ou use a roda para aproximar.</p><button class="btn small" type="button" id="vSpin">Girar sozinho</button></div>
+  </div>
+</div>
+<div class="toast" id="toast" hidden></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script>
+(() => {
+'use strict';
+const $ = (s, r = document) => r.querySelector(s);
+const rad = d => d * Math.PI / 180;
+const slug = s => (s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '') || 'skin';
+const uuid = () => (crypto.randomUUID ? crypto.randomUUID() : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => { const r = Math.random() * 16 | 0; return (c === 'x' ? r : (r & 3 | 8)).toString(16); }));
+
+const S = { name: 'Meu skinpack', version: '1.0.0', packUuid: uuid(), modUuid: uuid(), skins: [] };
+
+/* ---------- avisos ---------- */
+let toastT;
+function toast(msg) {
+  const t = $('#toast'); t.textContent = msg; t.hidden = false;
+  clearTimeout(toastT); toastT = setTimeout(() => { t.hidden = true; }, 3800);
+}
+const setStatus = m => { $('#status').textContent = m; };
+
+/* ---------- geometria ---------- */
+function parseGeoFile(text) {
+  const j = JSON.parse(text.replace(/^﻿/, ''));
+  const out = [];
+  if (Array.isArray(j['minecraft:geometry'])) {
+    for (const g of j['minecraft:geometry']) {
+      const d = g.description || {};
+      out.push({ id: d.identifier || 'geometry.model', texW: d.texture_width || 64, texH: d.texture_height || 64, fmt: 'new', fv: j.format_version || '1.12.0', raw: g, bones: g.bones || [] });
+    }
+  } else {
+    for (const k of Object.keys(j)) {
+      if (!k.startsWith('geometry.')) continue;
+      const v = j[k];
+      out.push({ id: k.split(':')[0], texW: v.texturewidth || 64, texH: v.textureheight || 64, fmt: 'legacy', fv: j.format_version || '1.10.0', raw: v, bones: v.bones || [] });
+    }
+  }
+  if (!out.length) throw new Error('Não encontrei nenhuma geometria neste arquivo.');
+  return out;
+}
+const fvNum = v => String(v).split('.').map(n => parseInt(n, 10) || 0);
+const maxFv = list => list.reduce((a, b) => { const x = fvNum(a), y = fvNum(b); for (let i = 0; i < 3; i++) { if ((y[i] || 0) !== (x[i] || 0)) return (y[i] || 0) > (x[i] || 0) ? b : a; } return a; }, list[0]);
+
+function buildGeometryJson(items) {
+  const anyNew = items.some(i => i.geo.fmt === 'new');
+  if (!anyNew) {
+    const out = { format_version: maxFv(items.map(i => i.geo.fv)) };
+    for (const { outId, geo } of items) out[outId] = geo.raw;
+    return out;
+  }
+  const arr = items.map(({ outId, geo }) => {
+    if (geo.fmt === 'new') { const c = Object.assign({}, geo.raw); c.description = Object.assign({}, c.description || {}, { identifier: outId }); return c; }
+    const r = geo.raw, d = { identifier: outId, texture_width: geo.texW, texture_height: geo.texH };
+    for (const k of ['visible_bounds_width', 'visible_bounds_height', 'visible_bounds_offset']) if (r[k] !== undefined) d[k] = r[k];
+    return { description: d, bones: r.bones };
+  });
+  const fv = maxFv(items.filter(i => i.geo.fmt === 'new').map(i => i.geo.fv));
+  return { format_version: fv, 'minecraft:geometry': arr };
+}
+
+function humanoid(slim, texH, hasCape) {
+  const a = slim ? 3 : 4, old = texH === 32;
+  const bones = [
+    { name: 'body', pivot: [0, 24, 0], cubes: [{ origin: [-4, 12, -2], size: [8, 12, 4], uv: [16, 16] }] },
+    { name: 'head', pivot: [0, 24, 0], cubes: [{ origin: [-4, 24, -4], size: [8, 8, 8], uv: [0, 0] }] },
+    { name: 'hat', parent: 'head', pivot: [0, 24, 0], cubes: [{ origin: [-4, 24, -4], size: [8, 8, 8], uv: [32, 0], inflate: 0.5 }] },
+    { name: 'rightArm', pivot: [-5, 22, 0], cubes: [{ origin: [-4 - a, 12, -2], size: [a, 12, 4], uv: [40, 16] }] },
+    { name: 'leftArm', pivot: [5, 22, 0], cubes: [{ origin: [4, 12, -2], size: [a, 12, 4], uv: old ? [40, 16] : [32, 48], mirror: old }] },
+    { name: 'rightLeg', pivot: [-1.9, 12, 0], cubes: [{ origin: [-3.9, 0, -2], size: [4, 12, 4], uv: [0, 16] }] },
+    { name: 'leftLeg', pivot: [1.9, 12, 0], cubes: [{ origin: [-0.1, 0, -2], size: [4, 12, 4], uv: old ? [0, 16] : [16, 48], mirror: old }] },
+  ];
+  if (!old) {
+    bones.push(
+      { name: 'jacket', parent: 'body', pivot: [0, 24, 0], cubes: [{ origin: [-4, 12, -2], size: [8, 12, 4], uv: [16, 32], inflate: 0.25 }] },
+      { name: 'rightSleeve', parent: 'rightArm', pivot: [-5, 22, 0], cubes: [{ origin: [-4 - a, 12, -2], size: [a, 12, 4], uv: [40, 32], inflate: 0.25 }] },
+      { name: 'leftSleeve', parent: 'leftArm', pivot: [5, 22, 0], cubes: [{ origin: [4, 12, -2], size: [a, 12, 4], uv: [48, 48], inflate: 0.25 }] },
+      { name: 'rightPants', parent: 'rightLeg', pivot: [-1.9, 12, 0], cubes: [{ origin: [-3.9, 0, -2], size: [4, 12, 4], uv: [0, 32], inflate: 0.25 }] },
+      { name: 'leftPants', parent: 'leftLeg', pivot: [1.9, 12, 0], cubes: [{ origin: [-0.1, 0, -2], size: [4, 12, 4], uv: [0, 48], inflate: 0.25 }] }
+    );
+  }
+  if (hasCape) bones.push({ name: 'cape', cape: true, texW: 64, texH: 32, pivot: [0, 24, 3], rotation: [0, 180, 0], cubes: [{ origin: [-5, 8, 3], size: [10, 16, 1], uv: [0, 0] }] });
+  return { id: slim ? 'geometry.humanoid.customSlim' : 'geometry.humanoid.custom', texW: 64, texH: texH || 64, bones };
+}
+
+/* ---------- render 3D ---------- */
+function loadImage(url) {
+  return new Promise((res, rej) => { const im = new Image(); im.onload = () => res(im); im.onerror = () => rej(new Error('Imagem inválida')); im.src = url; });
+}
+async function threeTex(t) {
+  if (t.three) return t.three;
+  const im = await loadImage(t.url);
+  const tx = new THREE.Texture(im);
+  tx.magFilter = THREE.NearestFilter; tx.minFilter = THREE.NearestFilter; tx.generateMipmaps = false; tx.flipY = false; tx.needsUpdate = true;
+  t.three = tx; return tx;
+}
+
+const FACES = {
+  north: { n: [0, 0, -1], u: [-1, 0, 0], v: [0, -1, 0], ax: 'xy' },
+  south: { n: [0, 0, 1], u: [1, 0, 0], v: [0, -1, 0], ax: 'xy' },
+  east:  { n: [1, 0, 0], u: [0, 0, -1], v: [0, -1, 0], ax: 'zy' },
+  west:  { n: [-1, 0, 0], u: [0, 0, 1], v: [0, -1, 0], ax: 'zy' },
+  up:    { n: [0, 1, 0], u: [-1, 0, 0], v: [0, 0, -1], ax: 'xz' },
+  down:  { n: [0, -1, 0], u: [-1, 0, 0], v: [0, 0, 1], ax: 'xz' },
+};
+
+function cubeGeometry(c, tw, th, boneMirror, off) {
+  const [ox, oy, oz] = c.origin, [w, h, d] = c.size, inf = c.inflate || 0;
+  const lo = [ox - inf, oy - inf, oz - inf], hi = [ox + w + inf, oy + h + inf, oz + d + inf];
+  const ctr = lo.map((v, i) => (v + hi[i]) / 2), ext = lo.map((v, i) => hi[i] - v);
+  const mirror = c.mirror !== undefined ? c.mirror : boneMirror;
+  let rects;
+  if (Array.isArray(c.uv)) {
+    const [u, v] = c.uv;
+    rects = {
+      north: [u + d, v + d, w, h], south: [u + 2 * d + w, v + d, w, h],
+      east: [u, v + d, d, h], west: [u + d + w, v + d, d, h],
+      up: [u + d, v, w, d], down: [u + d + w, v, w, d],
+    };
+    if (mirror) { const e = rects.east; rects.east = rects.west; rects.west = e; }
+  } else if (c.uv && typeof c.uv === 'object') {
+    rects = {};
+    for (const k of Object.keys(FACES)) { const f = c.uv[k]; if (f && f.uv) rects[k] = [f.uv[0], f.uv[1], (f.uv_size || [0, 0])[0], (f.uv_size || [0, 0])[1]]; }
+  } else return null;
+  const pos = [], uvs = [], idx = [];
+  const axI = { x: 0, y: 1, z: 2 };
+  for (const k of Object.keys(FACES)) {
+    const r = rects[k]; if (!r) continue;
+    const F = FACES[k];
+    const nAxis = F.n.findIndex(v => v !== 0);
+    const cn = ctr.slice(); cn[nAxis] += F.n
