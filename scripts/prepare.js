@@ -13,7 +13,8 @@ const libs = [
   { cdn: 'https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js', from: 'node_modules/jszip/dist/jszip.min.js', to: 'lib/jszip.min.js' },
 ];
 
-let html = fs.readFileSync(path.join(root, 'src/app.html'), 'utf8');
+const appPath = fs.existsSync(path.join(root, 'app.html')) ? 'app.html' : 'src/app.html';
+let html = fs.readFileSync(path.join(root, appPath), 'utf8');
 fs.mkdirSync(path.join(out, 'lib'), { recursive: true });
 for (const l of libs) {
   fs.copyFileSync(path.join(root, l.from), path.join(out, l.to));
