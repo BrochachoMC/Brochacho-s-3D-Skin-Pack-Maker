@@ -30,9 +30,16 @@ jobs:
         run: node scripts/prepare.js
 
       - name: Criar projeto Android
+        run: npx cap add android
+
+      - name: Gerar ícones
         run: |
-          npx cap add android
-          npx cap sync android
+          mkdir -p assets
+          cp icon-only.png icon-foreground.png icon-background.png assets/
+          npx -y @capacitor/assets generate --android
+
+      - name: Sincronizar
+        run: npx cap sync android
 
       - name: Compilar APK (debug)
         working-directory: android
