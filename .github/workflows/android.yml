@@ -1,0 +1,52 @@
+name: Build APK
+
+on:
+  push:
+    branches: [main, master]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Instalar dependências
+        run: npm install
+
+      - name: Montar a pasta www
+        run: node scripts/prepare.js
+
+      - name: Criar projeto Android
+        run: |
+          npx cap add android
+          npx cap sync android
+
+      - name: Compilar APK (debug)
+        working-directory: android
+        run: ./gradlew assembleDebug
+
+      - name: Guardar como artefato
+        uses: actions/upload-artifact@v4
+        with:
+          name: skinpack-maker-apk
+          path: android/app/build/outputs/apk/debug/app-debug.apk
+
+      - name: Publicar na aba Releases
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: apk-latest
+          name: Skinpack Maker (APK mais recente)
+          files: android/app/build/outputs/apk/debug/app-debug.apk
